@@ -1,0 +1,45 @@
+{
+  "name": "Parent",
+  "mz": 100.0,
+  "intensity": 500.0,
+  "children": [
+    {
+      "name": "Fragment 1",
+      "mz": 50.0,
+      "intensity": 200.0,
+      "children": [
+        {
+          "name": "Subfragment 1",
+          "mz": 25.0,
+          "intensity": 100.0,
+          "children": []
+        },
+        {
+          "name": "Subfragment 2",
+          "mz": 30.0,
+          "intensity": 50.0,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "Fragment 2",
+      "mz": 70.0,
+      "intensity": 300.0,
+      "children": [
+        {
+          "name": "Subfragment 3",
+          "mz": 35.0,
+          "intensity": 150.0,
+          "children": []
+        },
+        {
+          "name": "Subfragment 4",
+          "mz": 40.0,
+          "intensity": 100.0,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
