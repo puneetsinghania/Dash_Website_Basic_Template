@@ -1,0 +1,89 @@
+{
+  "root": {
+    "mz": 300.1234,
+    "intensity": 5000,
+    "ion_type": "M",
+    "ions": [
+      {
+        "mz": 100.0,
+        "intensity": 1000,
+        "ion_type": "y",
+        "label": "y1"
+      },
+      {
+        "mz": 150.0,
+        "intensity": 2000,
+        "ion_type": "y",
+        "label": "y2"
+      },
+      {
+        "mz": 200.0,
+        "intensity": 3000,
+        "ion_type": "y",
+        "label": "y3"
+      }
+    ],
+    "children": [
+      {
+        "mz": 150.1234,
+        "intensity": 4000,
+        "ion_type": "B",
+        "ions": [
+          {
+            "mz": 130.0,
+            "intensity": 800,
+            "ion_type": "y",
+            "label": "y1"
+          },
+          {
+            "mz": 145.0,
+            "intensity": 1200,
+            "ion_type": "y",
+            "label": "y2"
+          },
+          {
+            "mz": 160.0,
+            "intensity": 2000,
+            "ion_type": "y",
+            "label": "y3"
+          }
+        ],
+        "children": []
+      },
+      {
+        "mz": 200.1234,
+        "intensity": 4500,
+        "ion_type": "B",
+        "ions": [
+          {
+            "mz": 180.0,
+            "intensity": 1500,
+            "ion_type": "y",
+            "label": "y1"
+          },
+          {
+            "mz": 190.0,
+            "intensity": 2000,
+            "ion_type": "y",
+            "label": "y2"
+          },
+          {
+            "mz": 210.0,
+            "intensity": 3000,
+            "ion_type": "y",
+            "label": "y3"
+          }
+        ],
+        "children": [
+          {
+            "mz": 210.1234,
+            "intensity": 1000,
+            "ion_type": "B",
+            "ions": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}
