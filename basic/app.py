@@ -22,11 +22,97 @@ from tqdm import tqdm
 import urllib
 import json
 
+
 from collections import defaultdict
 import uuid
 
 from flask_caching import Cache
 
+import networkx as nx
+from plotly.graph_objs import Scatter, Figure
+
+
+# Functions for creating and visualizing a tree from JSON
+def add_tree_data(G, parent_node, json_dict):
+    """
+    Recursive function to add nodes to the tree
+    """
+    for k, v in json_dict.items():
+        if isinstance(v, dict):
+            G.add_edge(parent_node, v["name"])
+            add_tree_data(G, v["name"], v)
+        elif isinstance(v, list):
+            for child in v:
+                G.add_edge(parent_node, child["name"])
+                add_tree_data(G, child["name"], child)
+
+def create_tree(json_dict):
+    """
+    Create a networkx tree from the json dictionary
+    """
+    G = nx.DiGraph()
+    root = json_dict["name"]
+    add_tree_data(G, root, json_dict)
+    return G
+
+
+def draw_graph(G):
+    """
+    Draw the graph using plotly
+    """
+    pos = nx.spring_layout(G)
+    edge_x = []
+    edge_y = []
+    for edge in G.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+    edge_trace = Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+
+    node_x = [pos[node][0] for node in G.nodes()]
+    node_y = [pos[node][1] for node in G.nodes()]
+
+    node_trace = Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            colorscale='YlGnBu',
+            reversescale=True,
+            color=[],
+            size=10,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2))
+
+    node_text = [node for node in G.nodes()]
+    node_trace.text = node_text
+
+    fig = Figure(data=[edge_trace, node_trace],
+                 layout=go.Layout(
+                    title=dict(text='Tree structure'),
+                    showlegend=False,
+                    hovermode='closest',
+                    margin=dict(b=20, l=5, r=5, t=40),
+                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
+    return fig
 
 server = Flask(__name__)
 app = dash.Dash(__name__, server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -41,26 +127,6 @@ cache = Cache(app.server, config={
 
 server = app.server
 
-# setting tracking token
-app.index_string = """<!DOCTYPE html>
-<html>
-    <head>
-        <!-- Umami Analytics -->
-        <script async defer data-website-id="ENTER YOUR TOKEN HERE" src="https://analytics.gnps2.org/umami.js"></script>
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>"""
 
 NAVBAR = dbc.Navbar(
     children=[
@@ -86,20 +152,11 @@ DATASELECTION_CARD = [
             html.H5(children='Data Selection'),
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Spectrum USI"),
-                    dbc.Input(id='usi1', placeholder="Enter GNPS USI", value=""),
+                    dbc.InputGroupText("JSON URL"),
+                    dbc.Input(id='json_url', placeholder="Enter URL for JSON file", value=""),
                 ],
                 className="mb-3",
             ),
-            html.Hr(),
-            dbc.InputGroup(
-                [
-                    dbc.InputGroupText("Spectrum USI"),
-                    dbc.Input(id='usi2', placeholder="Enter GNPS USI", value=""),
-                ],
-                className="mb-3",
-            ),
-            html.Br(),
             dbc.Button("Copy Link", color="info", id="copy_link_button", n_clicks=0),
             html.Div(
                 [
@@ -185,57 +242,58 @@ BODY = dbc.Container(
     fluid=True,
     className="",
 )
-
 app.layout = html.Div(children=[NAVBAR, BODY])
 
 def _get_url_param(param_dict, key, default):
     return param_dict.get(key, [default])[0]
 
 @app.callback([
-                Output('usi1', 'value'), 
-                Output('usi2', 'value'), 
-              ],
-              [Input('url', 'search')])
-def determine_task(search):
-    
-    try:
-        query_dict = urllib.parse.parse_qs(search[1:])
-    except:
-        query_dict = {}
-
-    usi1 = _get_url_param(query_dict, "usi1", 'mzspec:MSV000082796:KP_108_Positive:scan:1974')
-    usi2 = _get_url_param(query_dict, "usi2", 'mzspec:MSV000082796:KP_108_Positive:scan:1977')
-
-    return [usi1, usi2]
-
-
-@app.callback([
-                Output('output', 'children')
-              ],
-              [
-                  Input('usi1', 'value'),
-                  Input('usi2', 'value'),
-            ])
-def draw_output(usi1, usi2):
-    return [usi1+usi2]
-
-
-@app.callback([
                 Output('query_link', 'href'),
               ],
                 [
-                    Input('usi1', 'value'),
-                    Input('usi2', 'value'),
+                    Input('json_url', 'value'),
                 ])
-def draw_url(usi1, usi2):
+def draw_url(json_url):
     params = {}
-    params["usi1"] = usi1
-    params["usi2"] = usi2
+    params["json_url"] = json_url
 
     url_params = urllib.parse.urlencode(params)
 
     return [request.host_url + "/?" + url_params]
 
+@app.callback(
+    Output('output', 'children'),
+    [Input('json_url', 'value')])
+def draw_output(json_url):
+    if json_url:
+        response = requests.get(json_url)
+        if response.status_code == 200:
+            try:
+                json_data = response.json()
+                if "children" in json_data:
+                    # JSON structure with "children" field
+                    tree = create_tree(json_data)
+                    graph = draw_graph(tree)  # Convert the tree to a plotly figure
+                    return [html.Div(children=[dcc.Graph(figure=graph)])]
+                elif "nodes" in json_data:
+                    # JSON structure with "nodes" field
+                    G = nx.DiGraph()
+                    for node in json_data["nodes"]:
+                        parent = node["parent"]
+                        if parent == "":
+                            parent = "Root"
+                        G.add_edge(parent, node["name"])
+                    graph = draw_graph(G)  # Convert the graph to a plotly figure
+                    return [html.Div(children=[dcc.Graph(figure=graph)])]
+                else:
+                    return [html.Div("Error: Invalid JSON structure")]
+            except json.decoder.JSONDecodeError as e:
+                return [html.Div(f'Error: Failed to decode JSON. Reason: {str(e)}')]
+        else:
+            return [html.Div(f'Error: Request failed with status code {response.status_code}')]
+    else:
+        return [html.Div(children=[f'Please enter a JSON URL'])]
+        
 app.clientside_callback(
     """
     function(n_clicks, button_id, text_to_copy) {
