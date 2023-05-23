@@ -4,17 +4,20 @@
       {
         "name": "y1",
         "mz": 100.0,
-        "intensity": 1000
+        "intensity": 1000,
+        "children": []
       },
       {
         "name": "y2",
         "mz": 150.0,
-        "intensity": 2000
+        "intensity": 2000,
+        "children": []
       },
       {
         "name": "y3",
         "mz": 200.0,
-        "intensity": 3000
+        "intensity": 3000,
+        "children": []
       },
       {
         "name": "B",
@@ -22,17 +25,20 @@
           {
             "name": "y1",
             "mz": 130.0,
-            "intensity": 800
+            "intensity": 800,
+            "children": []
           },
           {
             "name": "y2",
             "mz": 145.0,
-            "intensity": 1200
+            "intensity": 1200,
+            "children": []
           },
           {
             "name": "y3",
             "mz": 160.0,
-            "intensity": 2000
+            "intensity": 2000,
+            "children": []
           }
         ]
       },
@@ -42,12 +48,14 @@
           {
             "name": "y1",
             "mz": 180.0,
-            "intensity": 1500
+            "intensity": 1500,
+            "children": []
           },
           {
             "name": "y2",
             "mz": 190.0,
-            "intensity": 2000
+            "intensity": 2000,
+            "children": []
           },
           {
             "name": "y3",
