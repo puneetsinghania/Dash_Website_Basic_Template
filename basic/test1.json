@@ -1,0 +1,11 @@
+{
+    "nodes": [
+        {"name": "A", "parent": ""},
+        {"name": "B", "parent": "A"},
+        {"name": "C", "parent": "A"},
+        {"name": "D", "parent": "B"},
+        {"name": "E", "parent": "B"},
+        {"name": "F", "parent": "C"},
+        {"name": "G", "parent": "C"}
+    ]
+}
